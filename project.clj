@@ -15,11 +15,11 @@
   :plugins [[lein-figwheel "0.5.19"]
             [lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]]
 
-  :source-paths ["src/clj" "src/cljs" "src/cljc"]
+  :source-paths ["src/clj" "src/cljs" "src/cljc" "utils-cljs"]
 
   :cljsbuild {:builds
               [{:id "dev"
-                :source-paths ["src/cljs" "src/cljc"]
+                :source-paths ["src/cljs" "src/cljc" "utils-cljs"]
 
                 ;; The presence of a :figwheel configuration here
                 ;; will cause figwheel to inject the figwheel client
@@ -43,7 +43,7 @@
                ;; production. You can build this with:
                ;; lein cljsbuild once min
                {:id "min"
-                :source-paths ["src/cljs" "src/cljc"]
+                :source-paths ["src/cljs" "src/cljc" "utils-cljs"]
                 :compiler {:output-to "resources/public/js/compiled/tsp.js"
                            :main tsp.core
                            :optimizations :advanced
@@ -91,7 +91,7 @@
   :profiles {:dev {:dependencies [[binaryage/devtools "0.9.10"]
                                   [figwheel-sidecar "0.5.19"]]
                    ;; need to add dev source path here to get user.clj loaded
-                   :source-paths ["src/clj" "src/cljs" "src/cljc"] ; ["src" "dev"]
+                   :source-paths ["src/clj" "src/cljs" "src/cljc" "utils-cljs"] ; ["src" "dev"]
                    ;; need to add the compliled assets to the :clean-targets
                    :clean-targets ^{:protect false} ["resources/public/js/compiled"
                                                      :target-path]}})
