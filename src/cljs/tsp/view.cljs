@@ -222,6 +222,7 @@
                                      :prev-distance (get-in @state [:statistics :curr-distance])}})))
 
 
+
 (defn points-view [state]
   (let [{:keys [coords route]} @state
         ; on-drag-start (fn [data-id x y] (prn "on-drag-start" data-id x y))
