@@ -1,5 +1,6 @@
 (ns shared.other
-  (:require [shared.utils :as utils]))
+  (:require [shared.utils :as utils]
+            [clojure.set :as set]))
 
 
 ; (defn mutation [v]
@@ -283,3 +284,174 @@
 ;       :on-drag-end (fn [data-id x y] (prn "on-drag-end__" data-id x y) (run main-state))} ;
 ;      ]))
 
+
+; (let [v [0 1 2 3]]
+;   (into
+;    (for [i v] #{i})
+;    (for [i v j v :when (< i j)] #{i j})))
+
+; Человек A может пересечь мост за одну минуту, B за две минуты, C за пять минут и D за восемь минут.
+
+; (def ts [1 2 5 8])
+; (def u (-> ts count range set))
+
+; (defn steps [v]
+;   (let [{:keys [l t]} (last v)
+;         l? (-> v count odd?)
+;         from (if l? l (set/difference u l))
+;         es (->> v (map :l) set)]
+;     (for [i from
+;           j from
+;           :let [l ((if l? disj conj) l i j)
+;                 t (+ t (max (ts i) (ts j)))]
+;           :when (and (<= i j) (<= t 15) (not (es l)))]
+;       (conj v {:l l :t t}))))
+
+; (defn f [vs] (mapcat #(if (-> % last :l empty?) [%] (f (steps %))) vs))
+
+; (comment
+
+; (f [ [{:l u :t 0}] ])
+; (+ 1 2 3)
+
+; )
+; (defn improve []
+;   (let [start-time (system-time)
+
+;         {:keys [route settings]} @state
+;         ; t1 (f-2-opt-1 route)
+;         t1-route-distance (common/route-distance route)
+
+
+;         lo (local-optimisation-heuristics
+;             (get-in @state [:settings :local-optimisation-heuristic]))
+
+;         data (->> @state
+;                   nearest-neighbor/make-route
+;                   ; multi-fragment-start-tour
+;                   (lo settings))
+;         t2-route-distance (common/route-distance data)
+;         delta (/ (- t1-route-distance t2-route-distance) t1-route-distance)]
+;     ; (when (pos? delta)
+;     (prn "improve"
+;          (-> delta (* 100) int (str " %"))
+;          (-> t2-route-distance (* 100) int))
+;     (reset-route data start-time)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+
+; (defn continue? []
+;   (let [{:keys [counter]} @state]
+;     (> counter 0)))
+
+
+; (defn on-tik [state]
+;   (let [{:keys [curr-tour route best-route-distance t cooling-rate number-of-iterations]} @state
+;         new-tour (mutation route) ; (mutation curr-tour)
+;         new-route-distance (route-distance new-tour)
+;         p (if (< new-route-distance best-route-distance)
+;             1
+;             (Math/exp (/ (- best-route-distance new-route-distance) best-route-distance 0.0001 t)) ;
+
+;             ; (/ (- new-route-distance best-route-distance) best-route-distance 0.01 t)
+;             )]
+;     ; (print (str number-of-iterations " " (.toFixed t 2) " " (int (* 100 p)) " " best-route-distance))
+;     (print (str (int t) " " (int (* 100 p)) " " (.toFixed (or best-route-distance 0) 2)))
+;     (when (< (Math/random) p)
+;       (swap! state assoc
+;           ;  :curr-tour new-tour
+;              :route new-tour
+;              :best-route-distance new-route-distance))
+;     (swap! state assoc :t (* t 0.99) :number-of-iterations (inc number-of-iterations))
+;     (and
+;      (:simulation-on @state)
+;      (> t 1))
+;     ; (continue?)
+;     ))
+
+; (defn periodic [f v]
+;   (-> (js/Promise. (fn [resolve] (js/setTimeout #(resolve (f v)) 100)))
+;       (.then #(when % (periodic f v)))
+;       (.catch prn)))
+
+; (defn stop-go [state]
+;   (swap! state update :simulation-on not)
+;   (when (:simulation-on @state) (periodic on-tik state)))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 2-opt ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+; (defn tst []
+;   (let [loop-count 100]
+;     (loop [i loop-count
+;            mi nil
+;            ma nil
+;            s 0]
+;       (if (pos? i)
+;         (let [start-data (common/random-data 20)
+;               ; _ (prn "-------------------------")
+;               t1-route-distance (route-distance (f-2-opt (greedy-tour start-data)))
+;               t2-route-distance (route-distance (f-2-opt (multi-fragment-start-tour
+;                                                         #_insertions-2-start-tour
+;                                                         start-data)))
+;               c (-> (- t1-route-distance t2-route-distance) (/ t1-route-distance) (* 100) int)]
+;           ; (prn t1-route-distance t2-route-distance)
+;           (recur (dec i)
+;                  (if mi (min mi c) c)
+;                  (if ma (max ma c) c)
+;                  (+ s c)))
+;         (prn [mi ma (/ s loop-count)])))))
+
+; (defn improve-- []
+;   (let [_ (reset! stat-3-opt nil)
+
+;         {:keys [route]} @state
+;         ; t1 (f-2-opt-1 route)
+;         t1-route-distance (route-distance route)
+
+;         opt-2-s (time (->> (greedy-tours (assoc @state :random? false #_true))
+;                            (mapv f-2-opt #_-fix-r)))
+
+;         data (safe-min-key route-distance opt-2-s)
+;         _ (prn (->> opt-2-s
+;                     (map #(-> % route-distance (* 100) int))
+;                     frequencies
+;                     (sort-by first)))
+
+;         ; data (time (->> (greedy-tours (assoc @state :random? false #_true))
+;         ;                 (map f-2-opt)
+;         ;                 (safe-min-key route-distance)))
+;         ; data (time (->>
+;         ;             ; @state
+;         ;             ; greedy-tour
+;         ;             route
+;         ;             ; f-3-opt
+;         ;             f-2-opt))
+;         t2-route-distance (route-distance data)
+;         delta (/ (- t1-route-distance t2-route-distance) t1-route-distance)]
+;     (when (pos? delta)
+;       (prn "improve"
+;            (-> delta (* 100) int (str " %"))
+;            (-> t2-route-distance (* 100) int))
+
+;       (swap! state assoc :route data))
+;     ; (prn @stat-3-opt)
+;     ))
+
+; (defn fib [n] (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))
+
+; (defn tr [points f]
+;   (loop [ps points
+;          i 5]
+;     (f ps)
+;     (fib 38)
+;     (prn i)
+;     (if (<= i 0) points
+;         (recur (shuffle points) (dec i)))))

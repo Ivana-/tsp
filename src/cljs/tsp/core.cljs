@@ -1,6 +1,5 @@
 (ns tsp.core
   (:require [reagent.core :as reagent]
-            [re-frame.core :as rf]
             [tsp.view :as view]))
 
 ;; define your app data so that it doesn't get over-written on reload
@@ -21,10 +20,8 @@
     (println "dev mode")))
 
 (defn mount-root []
-  (rf/clear-subscription-cache!)
   (reagent/render [view/main-panel] (.getElementById js/document "app")))
 
 (defn ^:export init []
-  (rf/dispatch-sync [:initialize-db])
   (dev-setup)
   (mount-root))
